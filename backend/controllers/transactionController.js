@@ -4,12 +4,27 @@ const Transaction = require("../models/Transaction");
 // Jab route call kare, tab ye function chalega
 const addTransaction = async (req, res) => {
   try {
+    const { amount, type, category, date } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Amount must be greater than 0" });
+    }
+
+    if (!type || !["income", "expense"].includes(type)) {
+      return res.status(400).json({ message: "Invalid transaction type" });
+    }
+
+    if (!category) {
+      return res.status(400).json({ message: "Category is required" });
+    }
+
     const transaction = await Transaction.create(req.body);
     res.status(201).json(transaction);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const getTransactions = async (req, res) => {
   try {

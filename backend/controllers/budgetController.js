@@ -2,14 +2,24 @@ const Budget = require("../models/Budget");
 const Transaction = require("../models/Transaction");
 
 const setBudget=async(req,res)=>{
-    try{
-        const budget= await Budget.create(req.body);
-        res.status(201).json(budget);
+  try {
+    const { month, year, amount } = req.body;
+
+    const existingBudget = await Budget.findOne({ month, year });
+
+    if (existingBudget) {
+      return res.status(400).json({
+        message: "Budget already exists for this month",
+      });
     }
-    catch(error){
-        res.status(500).json({message: error.message});
-    }
+
+    const budget = await Budget.create(req.body);
+    res.status(201).json(budget);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
+
 
 const getBudgetSummary = async (req, res) => {
   try {
