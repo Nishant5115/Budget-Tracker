@@ -1,15 +1,8 @@
-function SummaryCard({ title, amount }) {
+function SummaryCard({ title, amount, variant }) {
   return (
-    <div
-      style={{
-        flex: 1,
-        padding: "15px",
-        border: "1px solid #ddd",
-        borderRadius: "6px",
-      }}
-    >
-      <h3>{title}</h3>
-      <h2>₹{amount}</h2>
+    <div className={`summary-card ${variant}`}>
+      <div className="summary-title">{title}</div>
+      <div className="summary-amount">₹{amount}</div>
     </div>
   );
 }
