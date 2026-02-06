@@ -1,8 +1,142 @@
-#root {
-  max-width: 1280px;
+﻿#root {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f5f7fa 0%, #e8ecf1 100%);
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 3rem 2rem;
+  min-height: 100vh;
+}
+
+/* Header */
+.dashboard-header {
+  text-align: left;
+  margin-bottom: 3rem;
+  border-bottom: 1px solid #dde4eb;
+  padding-bottom: 2rem;
+}
+
+.dashboard-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+  color: #1a2332;
+}
+
+.dashboard-subtitle {
+  font-size: 1rem;
+  color: #6b7c93;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+/* Charts Section */
+.charts-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Styling */
+.chart-card,
+.status-card {
+  background: white;
+  border-radius: 12px;
   padding: 2rem;
-  text-align: center;
+  border: 1px solid #e0e6ed;
+  box-shadow: 0 2px 8px rgba(0, 21, 55, 0.05);
+  transition: all 0.3s ease;
+}
+
+.chart-card:hover,
+.status-card:hover {
+  border-color: #d0d8e0;
+  box-shadow: 0 4px 16px rgba(0, 21, 55, 0.08);
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f3f7;
+  padding-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1a2332;
+  letter-spacing: -0.3px;
+}
+
+.chart-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 400px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.8rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .dashboard-grid {
+    gap: 1.5rem;
+  }
+
+  .chart-card,
+  .status-card {
+    padding: 1.5rem;
+  }
 }
 
 .logo {
