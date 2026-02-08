@@ -1,9 +1,14 @@
-const express=require("express");
-const router= express.Router();
+const express = require("express");
+const router = express.Router();
 
-const{setBudget,getBudgetSummary}= require("../controllers/budgetController");
+const {
+  setBudget,
+  getBudgetSummary,
+} = require("../controllers/budgetController");
 
-router.post("/", setBudget);
-router.get("/summary", getBudgetSummary);
+const { protect } = require("../middleware/authMiddleware");
 
-module.exports= router;
+router.post("/", protect, setBudget);
+router.get("/summary", protect, getBudgetSummary);
+
+module.exports = router;

@@ -18,6 +18,10 @@ app.use("/api/transactions", transactionRoutes);
 const budgetRoutes = require("./routes/budgetRoutes");
 app.use("/api/budget", budgetRoutes);
 
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
+
+
 // test route
 app.get("/", (req, res) => {
   res.send("Budget Tracker API is running 🚀");

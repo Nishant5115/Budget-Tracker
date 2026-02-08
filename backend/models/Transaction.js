@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
 
-/*
-  This schema defines how a transaction will look in the database
-*/
+//This schema defines how a transaction will look in the database
+
 const transactionSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     type: {
       type: String,
       enum: ["income", "expense"],
@@ -30,7 +34,5 @@ const transactionSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-
 
 module.exports = mongoose.model("Transaction", transactionSchema);
