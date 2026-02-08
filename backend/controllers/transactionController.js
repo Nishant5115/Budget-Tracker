@@ -1,7 +1,10 @@
+
 const Transaction = require("../models/Transaction");
 
 
 const addTransaction = async (req, res) => {
+
+
   try {
     const { amount, type, category, date } = req.body;
 

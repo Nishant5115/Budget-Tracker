@@ -138,3 +138,16 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.logout-btn {
+  padding: 8px 14px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #dc2626;
+}
