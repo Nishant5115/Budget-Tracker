@@ -1,19 +1,12 @@
-
 const Transaction = require("../models/Transaction");
 
 
 const addTransaction = async (req, res) => {
-
-
   try {
-    const { amount, type, category, date } = req.body;
+    const { amount, category, date, type, description } = req.body;
 
     if (!amount || amount <= 0) {
       return res.status(400).json({ message: "Amount must be greater than 0" });
-    }
-
-    if (!type || !["income", "expense"].includes(type)) {
-      return res.status(400).json({ message: "Invalid transaction type" });
     }
 
     if (!category) {
@@ -22,10 +15,11 @@ const addTransaction = async (req, res) => {
 
     const transaction = await Transaction.create({
       amount,
-      type,
       category,
-      date,
-      user: req.user._id, 
+      date: date ? new Date(date) : new Date(),
+      type: type || "expense",
+      description: description || "",
+      user: req.user._id,
     });
 
     res.status(201).json(transaction);
@@ -34,17 +28,19 @@ const addTransaction = async (req, res) => {
   }
 };
 
+
 const getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({
       user: req.user._id,
-    });
+    }).sort({ date: -1 });
 
     res.status(200).json(transactions);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const deleteTransaction = async (req, res) => {
   try {
@@ -54,25 +50,26 @@ const deleteTransaction = async (req, res) => {
     });
 
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.status(404).json({ message: "Expense not found" });
     }
 
-    res.status(200).json({ message: "Transaction deleted successfully" });
+    res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+
 const updateTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id }, // 🔑
+      { _id: req.params.id, user: req.user._id },
       req.body,
       { new: true }
     );
 
     if (!transaction) {
-      return res.status(404).json({ message: "Transaction not found" });
+      return res.status(404).json({ message: "Expense not found" });
     }
 
     res.status(200).json(transaction);
@@ -85,27 +82,28 @@ const updateTransaction = async (req, res) => {
 const getSummary = async (req, res) => {
   try {
     const transactions = await Transaction.find({
-      user: req.user._id, // 🔑
+      user: req.user._id,
     });
 
-    let totalIncome = 0;
-    let totalExpense = 0;
+    const totalIncome = transactions
+      .filter(t => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
 
-    transactions.forEach((t) => {
-      if (t.type === "income") totalIncome += t.amount;
-      if (t.type === "expense") totalExpense += t.amount;
-    });
+    const totalExpense = transactions
+      .filter(t => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
 
-    res.status(200).json({
+    const balance = totalIncome - totalExpense;
+
+    res.status(200).json({ 
       totalIncome,
       totalExpense,
-      balance: totalIncome - totalExpense,
+      balance
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const getCategorySummary = async (req, res) => {
   try {
@@ -126,6 +124,7 @@ const getCategorySummary = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 const monthlySummary = async (req, res) => {
   try {

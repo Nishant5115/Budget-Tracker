@@ -4,32 +4,33 @@ import "./AddTransaction.css";
 
 function AddTransaction({ onSuccess }) {
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState("expense");
   const [category, setCategory] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [type, setType] = useState("expense");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("AddTransaction submit clicked");
-
     setError("");
 
     try {
       await API.post("/transactions", {
         amount: Number(amount),
-        type,
         category,
-        date,
+        date: date || new Date().toISOString(),
+        type,
+        description,
       });
 
       // clear form
       setAmount("");
       setCategory("");
-      setDate("");
+      setDate(new Date().toISOString().split('T')[0]);
+      setType("expense");
+      setDescription("");
 
-      // tell parent to refresh dashboard
-      onSuccess();
+      onSuccess(); // refresh dashboard / list
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add transaction");
     }
@@ -42,22 +43,28 @@ function AddTransaction({ onSuccess }) {
       {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit}>
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+        <select
+          value={type}
+          onChange={(e) => setType(e.target.value)}
           required
-        />
-
-        <select value={type} onChange={(e) => setType(e.target.value)}>
+        >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
 
         <input
+          type="number"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          step="0.01"
+          min="0.01"
+          required
+        />
+
+        <input
           type="text"
-          placeholder="Category (Food, Rent, Salary...)"
+          placeholder="Category (Food, Rent, Travel, Salary...)"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
@@ -67,9 +74,17 @@ function AddTransaction({ onSuccess }) {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          required
         />
 
-        <button type="submit">Add</button>
+        <input
+          type="text"
+          placeholder="Description (optional)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+
+        <button type="submit">Add Transaction</button>
       </form>
     </div>
   );

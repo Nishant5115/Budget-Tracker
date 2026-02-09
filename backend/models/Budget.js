@@ -7,17 +7,15 @@ const budgetSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    category: {
-      type: String,
-      required: true,
-    },
-    limit: {
+    amount: {
       type: Number,
       required: true,
     },
     month: {
       type: Number,
       required: true,
+      min: 1,
+      max: 12,
     },
     year: {
       type: Number,
@@ -26,6 +24,9 @@ const budgetSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+budgetSchema.index({ user: 1, month: 1, year: 1 }, { unique: true });
 
 module.exports =
   mongoose.models.Budget ||

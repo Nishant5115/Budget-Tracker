@@ -11,25 +11,27 @@ function Dashboard({
 }) {
   return (
     <div>
-      {/* Summary Cards */}
-      {summary && (
-        <div className="summary-grid">
-          <SummaryCard
-            title="Total Income"
-            amount={summary.totalIncome}
-            variant="income"
-          />
-          <SummaryCard
-            title="Total Expenses"
-            amount={summary.totalExpense}
-            variant="expense"
-          />
-          <SummaryCard
-            title="Net Savings"
-            amount={summary.balance}
-            variant="balance"
-          />
-        </div>
+     {budgetData && (
+  <div className="summary-grid">
+    <SummaryCard
+      title="Monthly Budget"
+      amount={budgetData.budget}
+      variant="budget"
+    />
+
+    <SummaryCard
+      title="Total Spent"
+      amount={budgetData.spent}
+      variant="expense"
+    />
+
+    <SummaryCard
+      title="Remaining"
+      amount={budgetData.remaining}
+      variant={budgetData.remaining >= 0 ? "success" : "danger"}
+    />
+  </div>
+
       )}
 
       {/* Charts */}

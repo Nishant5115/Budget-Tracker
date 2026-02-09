@@ -8,7 +8,7 @@ API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    // IMPORTANT LINE
+  
     config.headers = config.headers || {};
 
     if (token) {

@@ -68,7 +68,7 @@ body {
 }
 
 /* Variants */
-.summary-card.income {
+.summary-card.budget {
   background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
@@ -76,8 +76,11 @@ body {
   background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 
-.summary-card.balance {
+.summary-card.success {
   background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+.summary-card.danger {
+  background: linear-gradient(135deg, #3f0303, #d33232);
 }
 
 /* ---------- CARDS ---------- */
@@ -150,4 +153,46 @@ body {
 
 .logout-btn:hover {
   background-color: #dc2626;
+}
+
+/* ---------- NAVIGATION ---------- */
+.nav {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.nav button {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.nav button:hover {
+  color: #111827;
+  border-bottom-color: #d1d5db;
+}
+
+.nav button.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.negative {
+  color: #dc2626;
 }

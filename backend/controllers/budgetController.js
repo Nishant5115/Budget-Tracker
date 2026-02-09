@@ -1,40 +1,49 @@
 const Budget = require("../models/Budget");
 const Transaction = require("../models/Transaction");
 
-// ================= SET / UPDATE BUDGET =================
+
 const setBudget = async (req, res) => {
   try {
-    const { category, limit, month, year } = req.body;
+    const { amount, month, year } = req.body;
 
-    if (!category || !limit || !month || !year) {
-      return res.status(400).json({ message: "All fields are required" });
+    if (!amount || !month || !year) {
+      return res.status(400).json({ message: "Amount, month, and year are required" });
     }
 
-   
+    if (amount <= 0) {
+      return res.status(400).json({ message: "Budget amount must be greater than 0" });
+    }
+
+    if (month < 1 || month > 12) {
+      return res.status(400).json({ message: "Month must be between 1 and 12" });
+    }
+
+
     let budget = await Budget.findOne({
       user: req.user._id,
-      category,
-      month,
-      year,
+      month: Number(month),
+      year: Number(year),
     });
 
     if (budget) {
       
-      budget.limit = limit;
+      budget.amount = Number(amount);
       await budget.save();
     } else {
       
       budget = await Budget.create({
         user: req.user._id,
-        category,
-        limit,
-        month,
-        year,
+        amount: Number(amount),
+        month: Number(month),
+        year: Number(year),
       });
     }
 
     res.status(201).json(budget);
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Budget already exists for this month" });
+    }
     res.status(500).json({ message: error.message });
   }
 };
@@ -44,11 +53,14 @@ const getBudgetSummary = async (req, res) => {
   try {
     const { month, year } = req.query;
 
-    
+    if (!month || !year) {
+      return res.status(400).json({ message: "Month and year are required" });
+    }
+
     const budget = await Budget.findOne({
       user: req.user._id,
-      month,
-      year,
+      month: Number(month),
+      year: Number(year),
     });
 
     if (!budget) {
@@ -57,13 +69,16 @@ const getBudgetSummary = async (req, res) => {
         .json({ message: "No budget set for this month" });
     }
 
+ 
+    const startDate = new Date(Number(year), Number(month) - 1, 1);
+    const endDate = new Date(Number(year), Number(month), 1);
+
     const transactions = await Transaction.find({
       user: req.user._id,
       type: "expense",
-      category: budget.category,
       date: {
-        $gte: new Date(year, month - 1, 1),
-        $lt: new Date(year, month, 1),
+        $gte: startDate,
+        $lt: endDate,
       },
     });
 
@@ -72,11 +87,10 @@ const getBudgetSummary = async (req, res) => {
       0
     );
 
-    const remaining = budget.limit - totalExpense;
+    const remaining = budget.amount - totalExpense;
 
     res.status(200).json({
-      category: budget.category,
-      limit: budget.limit,
+      budget: budget.amount,
       spent: totalExpense,
       remaining,
       status: remaining >= 0 ? "within budget" : "overspent",

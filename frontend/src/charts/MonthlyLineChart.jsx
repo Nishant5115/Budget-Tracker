@@ -8,10 +8,18 @@ import {
 } from "recharts";
 
 function MonthlyLineChart({ data }) {
-  const chartData = Object.keys(data).map((key) => ({
+  const chartData = Object.keys(data || {}).map((key) => ({
     month: key,
     amount: data[key],
   }));
+
+  if (chartData.length === 0) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center", color: "#6b7280" }}>
+        No expense data available. Add some transactions to see the chart!
+      </div>
+    );
+  }
 
   return (
     <LineChart width={500} height={300} data={chartData}>
