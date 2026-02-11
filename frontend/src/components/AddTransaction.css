@@ -1,8 +1,8 @@
 .add-transaction {
   background: #ffffff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 20px 20px 18px;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
   margin-bottom: 24px;
 }
 
@@ -12,22 +12,22 @@
 
 .add-transaction form {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .add-transaction input,
 .add-transaction select {
-  padding: 10px;
+  padding: 9px 10px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
 .add-transaction button {
-  padding: 10px;
+  padding: 10px 12px;
   background: #16a34a;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   cursor: pointer;
 }
 

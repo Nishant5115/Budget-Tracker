@@ -30,7 +30,7 @@ function AddTransaction({ onSuccess }) {
       setType("expense");
       setDescription("");
 
-      onSuccess(); // refresh dashboard / list
+      onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || "Failed to add transaction");
     }

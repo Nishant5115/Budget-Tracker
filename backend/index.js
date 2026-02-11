@@ -21,6 +21,9 @@ app.use("/api/budget", budgetRoutes);
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
+const userRoutes = require("./routes/userRoutes");
+app.use("/api/users", userRoutes);
+
 
 // test route
 app.get("/", (req, res) => {
