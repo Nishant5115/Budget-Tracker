@@ -10,5 +10,12 @@ export const updateCurrentUserProfile = async (payload) => {
   return res.data;
 };
 
+export const changePassword = async (payload) => {
+  const res = await API.post("/users/change-password", payload);
+  return res.data;
+};
+
+
+
 
 

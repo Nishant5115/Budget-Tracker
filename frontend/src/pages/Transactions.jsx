@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AddTransaction from "../components/AddTransaction";
 import API from "../services/api";
 
@@ -7,10 +7,22 @@ function Transactions({ onTransactionAdded }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [filterType, setFilterType] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/transactions");
+
+      const params = {};
+      if (filterType !== "all") params.type = filterType;
+      if (filterCategory) params.category = filterCategory;
+      if (filterFrom) params.from = filterFrom;
+      if (filterTo) params.to = filterTo;
+
+      const res = await API.get("/transactions", { params });
       setTransactions(res.data);
       setError("");
     } catch (err) {
@@ -22,6 +34,7 @@ function Transactions({ onTransactionAdded }) {
 
   useEffect(() => {
     fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (id) => {
@@ -47,17 +60,198 @@ function Transactions({ onTransactionAdded }) {
     });
   };
 
+  const analytics = useMemo(() => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach((t) => {
+      if (t.type === "income") {
+        totalIncome += t.amount;
+      } else if (t.type === "expense") {
+        totalExpense += t.amount;
+      }
+    });
+
+    return {
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+    };
+  }, [transactions]);
+
   return (
     <div>
-      <h2 style={{ marginBottom: "16px" }}>Transactions</h2>
+      <h2 style={{ marginBottom: "12px" }}>Transactions</h2>
 
-      <AddTransaction onSuccess={() => { fetchTransactions(); if (onTransactionAdded) onTransactionAdded(); }} />
+      
+
+     
+
+      <AddTransaction
+        onSuccess={() => {
+          fetchTransactions();
+          if (onTransactionAdded) onTransactionAdded();
+        }}
+      />
 
       {error && <p className="error" style={{ marginTop: "16px" }}>{error}</p>}
 
       <div style={{ marginTop: "32px" }}>
         <h3>Transaction History</h3>
-        
+        {/* Filters */}
+      <div
+        style={{
+          marginBottom: 16,
+          padding: 12,
+          borderRadius: 10,
+          background: "#f9fafb",
+          border: "1px solid #e5e7eb",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: 10,
+        }}
+      >
+        <div>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            Type
+          </label>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "7px 8px",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: 13,
+            }}
+          >
+            <option value="all">All</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            Category
+          </label>
+          <input
+            type="text"
+            placeholder="Search category"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "7px 8px",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: 13,
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            From
+          </label>
+          <input
+            type="date"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "7px 8px",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: 13,
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              marginBottom: 4,
+              fontSize: 12,
+              color: "#6b7280",
+            }}
+          >
+            To
+          </label>
+          <input
+            type="date"
+            value={filterTo}
+            onChange={(e) => setFilterTo(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "7px 8px",
+              borderRadius: 6,
+              border: "1px solid #d1d5db",
+              fontSize: 13,
+            }}
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+          <button
+            type="button"
+            onClick={fetchTransactions}
+            style={{
+              padding: "8px 14px",
+              borderRadius: 999,
+              border: "none",
+              background: "#2563eb",
+              color: "white",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            {loading ? "Applying..." : "Apply filters"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setFilterType("all");
+              setFilterCategory("");
+              setFilterFrom("");
+              setFilterTo("");
+            }}
+            style={{
+              padding: "8px 10px",
+              borderRadius: 999,
+              border: "none",
+              background: "#e5e7eb",
+              color: "#111827",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
         {loading ? (
           <p>Loading transactions...</p>
         ) : transactions.length === 0 ? (

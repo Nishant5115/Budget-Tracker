@@ -25,6 +25,9 @@ function App() {
   const [monthlyData, setMonthlyData] = useState({});
   const [summary, setSummary] = useState(null);
   const [budgetData, setBudgetData] = useState(null);
+  const now = new Date();
+  const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
+  const [filterYear, setFilterYear] = useState(now.getFullYear());
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -48,11 +51,11 @@ function App() {
     }
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (month = filterMonth, year = filterYear) => {
     try {
-      const category = await getCategorySummary();
+      const category = await getCategorySummary(month, year);
       const monthly = await getMonthlySummary();
-      const summaryData = await getSummary();
+      const summaryData = await getSummary(month, year);
 
       setCategoryData(category);
       setMonthlyData(monthly);
@@ -62,10 +65,9 @@ function App() {
     }
 
     try {
-      const now = new Date();
       const budget = await getBudgetSummary(
-        now.getMonth() + 1,
-        now.getFullYear()
+        month,
+        year
       );
       setBudgetData(budget);
     } catch (err) {
@@ -77,7 +79,12 @@ function App() {
     if (isAuthenticated) {
       fetchDashboardData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, filterMonth, filterYear]);
+
+  const handleDashboardFilterChange = (month, year) => {
+    setFilterMonth(month);
+    setFilterYear(year);
+  };
 
   if (!isAuthenticated) {
     return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
@@ -87,15 +94,23 @@ function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-mark">BT</div>
-          <div className="sidebar-logo-text">Budget Tracker</div>
+          <div className="sidebar-logo-mark">💰</div>
+          <div className="sidebar-logo-text">BudgetTracker</div>
         </div>
+
+        {currentUser && (
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{currentUser.name}</div>
+            <div className="sidebar-user-email">{currentUser.email}</div>
+          </div>
+        )}
 
         <div className="sidebar-section-label">Overview</div>
         <nav className="sidebar-nav">
           <button
             className={currentPage === "dashboard" ? "active" : ""}
             onClick={() => setCurrentPage("dashboard")}
+            title="Dashboard"
           >
             <span className="icon">📊</span>
             <span className="label">Dashboard</span>
@@ -103,6 +118,7 @@ function App() {
           <button
             className={currentPage === "budget" ? "active" : ""}
             onClick={() => setCurrentPage("budget")}
+            title="Budget"
           >
             <span className="icon">💰</span>
             <span className="label">Budget</span>
@@ -110,8 +126,9 @@ function App() {
           <button
             className={currentPage === "transactions" ? "active" : ""}
             onClick={() => setCurrentPage("transactions")}
+            title="Transactions"
           >
-            <span className="icon">📒</span>
+            <span className="icon">📝</span>
             <span className="label">Transactions</span>
           </button>
         </nav>
@@ -121,6 +138,7 @@ function App() {
           <button
             className={currentPage === "profile" ? "active" : ""}
             onClick={() => setCurrentPage("profile")}
+            title="Profile"
           >
             <span className="icon">👤</span>
             <span className="label">Profile</span>
@@ -128,27 +146,20 @@ function App() {
         </nav>
 
         <div className="sidebar-footer">
-          <small>© {new Date().getFullYear()} Budget Tracker</small>
+          <small>© {new Date().getFullYear()} BudgetTracker</small>
         </div>
       </aside>
 
       <div className="app-main">
         <header className="topbar">
-          <div>
-            <h1 className="title">Financial workspace</h1>
+          <div className="topbar-left">
+            <h1 className="title">Financial Dashboard</h1>
             <p className="subtitle">
-              Monitor your cashflow, budgets and spending in one place.
+              Monitor your budget, expenses, and income in one place.
             </p>
           </div>
 
           <div className="header-right">
-            {currentUser && (
-              <div className="user-pill">
-                <span style={{ fontWeight: 500 }}>{currentUser.name}</span>
-                <span style={{ margin: "0 6px" }}>•</span>
-                <span style={{ fontSize: 12 }}>{currentUser.email}</span>
-              </div>
-            )}
             <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>
@@ -163,6 +174,9 @@ function App() {
                 categoryData={categoryData}
                 monthlyData={monthlyData}
                 budgetData={budgetData}
+                filterMonth={filterMonth}
+                filterYear={filterYear}
+                onFilterChange={handleDashboardFilterChange}
               />
             )}
 

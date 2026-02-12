@@ -31,9 +31,29 @@ const addTransaction = async (req, res) => {
 
 const getTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({
-      user: req.user._id,
-    }).sort({ date: -1 });
+    const { type, from, to, category } = req.query;
+
+    const query = { user: req.user._id };
+
+    if (type && (type === "income" || type === "expense")) {
+      query.type = type;
+    }
+
+    if (from || to) {
+      query.date = {};
+      if (from) {
+        query.date.$gte = new Date(from);
+      }
+      if (to) {
+        query.date.$lte = new Date(to);
+      }
+    }
+
+    if (category) {
+      query.category = { $regex: category, $options: "i" };
+    }
+
+    const transactions = await Transaction.find(query).sort({ date: -1 });
 
     res.status(200).json(transactions);
   } catch (error) {
@@ -81,24 +101,35 @@ const updateTransaction = async (req, res) => {
 
 const getSummary = async (req, res) => {
   try {
-    const transactions = await Transaction.find({
-      user: req.user._id,
-    });
+    const { month, year } = req.query;
+
+    const match = { user: req.user._id };
+
+    if (month && year) {
+      const m = Number(month);
+      const y = Number(year);
+      match.date = {
+        $gte: new Date(y, m - 1, 1),
+        $lt: new Date(y, m, 1),
+      };
+    }
+
+    const transactions = await Transaction.find(match);
 
     const totalIncome = transactions
-      .filter(t => t.type === "income")
+      .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const totalExpense = transactions
-      .filter(t => t.type === "expense")
+      .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
 
     const balance = totalIncome - totalExpense;
 
-    res.status(200).json({ 
+    res.status(200).json({
       totalIncome,
       totalExpense,
-      balance
+      balance,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -107,10 +138,23 @@ const getSummary = async (req, res) => {
 
 const getCategorySummary = async (req, res) => {
   try {
-    const transactions = await Transaction.find({
+    const { month, year } = req.query;
+
+    const match = {
       user: req.user._id,
       type: "expense",
-    });
+    };
+
+    if (month && year) {
+      const m = Number(month);
+      const y = Number(year);
+      match.date = {
+        $gte: new Date(y, m - 1, 1),
+        $lt: new Date(y, m, 1),
+      };
+    }
+
+    const transactions = await Transaction.find(match);
 
     const categorySummary = {};
 

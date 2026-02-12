@@ -58,12 +58,12 @@ function Login({ onLoginSuccess }) {
           } else {
             try {
               const data = await verifyOtp({ email, otp });
-              localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.token);
               if (data.user) {
                 localStorage.setItem("user", JSON.stringify(data.user));
               }
-              onLoginSuccess();
-            } catch (err) {
+      onLoginSuccess();
+    } catch (err) {
               setError(err.message || "OTP verification failed");
             }
           }
@@ -124,13 +124,13 @@ function Login({ onLoginSuccess }) {
 
         {!useOtp && (
           <>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
             {isRegister && (
               <input
