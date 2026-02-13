@@ -1,72 +1,33 @@
 import API from "./api";
+
+/*
+  REGISTER USER
+*/
 export const registerUser = async (userData) => {
-  const res = await fetch(`${API_URL}/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Registration failed");
-  }
-
-  return data;
+  const res = await API.post("/auth/register", userData);
+  return res.data;
 };
 
+/*
+  LOGIN USER
+*/
 export const loginUser = async (credentials) => {
-  const res = await fetch(`${API_URL}/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Login failed");
-  }
-
-  return data;
+  const res = await API.post("/auth/login", credentials);
+  return res.data;
 };
 
+/*
+  SEND OTP
+*/
 export const sendOtp = async (email) => {
-  const res = await fetch(`${API_URL}/send-otp`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to send OTP");
-  }
-
-  return data;
+  const res = await API.post("/auth/send-otp", { email });
+  return res.data;
 };
 
+/*
+  VERIFY OTP
+*/
 export const verifyOtp = async ({ email, otp }) => {
-  const res = await fetch(`${API_URL}/verify-otp`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, otp }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "OTP verification failed");
-  }
-
-  return data;
+  const res = await API.post("/auth/verify-otp", { email, otp });
+  return res.data;
 };
