@@ -1,13 +1,11 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Use Resend's test domain for development
+// For production, verify your domain at https://resend.com/domains
+const FROM_EMAIL = "onboarding@resend.dev";
 
 // Send bill reminder notification
 const sendBillReminderEmail = async (userEmail, userName, billData) => {
@@ -45,10 +43,15 @@ const sendBillReminderEmail = async (userEmail, userName, billData) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Bill reminder email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Bill reminder email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending bill reminder email:", error);
+    console.error(`❌ Error sending bill reminder email to ${userEmail}:`, error);
   }
 };
 
@@ -87,10 +90,15 @@ const sendBillPaymentConfirmationEmail = async (userEmail, userName, billData) =
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Bill payment confirmation email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Bill payment confirmation email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending bill payment confirmation email:", error);
+    console.error(`❌ Error sending bill payment confirmation email to ${userEmail}:`, error);
   }
 };
 
@@ -130,10 +138,15 @@ const sendSavingsGoalCreatedEmail = async (userEmail, userName, goalData) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Savings goal creation email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Savings goal creation email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending savings goal creation email:", error);
+    console.error(`❌ Error sending savings goal creation email to ${userEmail}:`, error);
   }
 };
 
@@ -172,10 +185,15 @@ const sendSavingsGoalCompletedEmail = async (userEmail, userName, goalData) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Savings goal completion email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Savings goal completion email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending savings goal completion email:", error);
+    console.error(`❌ Error sending savings goal completion email to ${userEmail}:`, error);
   }
 };
 
@@ -235,10 +253,15 @@ const sendBudgetAlertEmail = async (userEmail, userName, budgetData, percentageU
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Budget alert email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Budget alert email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending budget alert email:", error);
+    console.error(`❌ Error sending budget alert email to ${userEmail}:`, error);
   }
 };
 
@@ -282,10 +305,15 @@ const sendTransactionNotificationEmail = async (userEmail, userName, transaction
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Transaction notification email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Transaction notification email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending transaction notification email:", error);
+    console.error(`❌ Error sending transaction notification email to ${userEmail}:`, error);
   }
 };
 
@@ -323,10 +351,15 @@ const sendBudgetConfirmationEmail = async (userEmail, userName, budgetData) => {
       `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Budget confirmation email sent to ${userEmail}`);
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: userEmail,
+      subject: mailOptions.subject,
+      html: mailOptions.html,
+    });
+    console.log(`✅ Budget confirmation email sent to ${userEmail}`);
   } catch (error) {
-    console.error("Error sending budget confirmation email:", error);
+    console.error(`❌ Error sending budget confirmation email to ${userEmail}:`, error);
   }
 };
 

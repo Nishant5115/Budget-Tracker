@@ -1,28 +1,25 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-// Initialize transporter with validation
-let transporter;
+// Initialize Resend with API key
+let resend;
+// Use Resend's test domain for development
+// For production, verify your domain at https://resend.com/domains
+const FROM_EMAIL = "onboarding@resend.dev";
 
-const initializeTransporter = () => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS not configured in environment variables");
+const initializeResend = () => {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("⚠️ WARNING: RESEND_API_KEY not configured in environment variables");
     return null;
   }
 
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  return new Resend(process.env.RESEND_API_KEY);
 };
 
 // Initialize on app start
-transporter = initializeTransporter();
+resend = initializeResend();
 
 const registerUser = async (req, res) => {
   try {
@@ -121,11 +118,11 @@ const loginUser = async (req, res) => {
 const sendOtp = async (req, res) => {
   try {
     // Validate email configuration
-    if (!transporter) {
-      console.error("❌ Email transporter not configured. Check EMAIL_USER and EMAIL_PASS environment variables.");
+    if (!resend) {
+      console.error("❌ Resend API not configured. Check RESEND_API_KEY environment variable.");
       return res.status(500).json({ 
         message: "Email service is not configured. Please contact administrator.",
-        details: "EMAIL_USER or EMAIL_PASS not set"
+        details: "RESEND_API_KEY not set"
       });
     }
 
@@ -160,8 +157,8 @@ const sendOtp = async (req, res) => {
 
     // Send OTP to user's registered email with error handling
     try {
-      const mailResult = await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+      const result = await resend.emails.send({
+        from: FROM_EMAIL,
         to: user.email,
         subject: "Your Budget Tracker OTP",
         html: `
@@ -191,7 +188,7 @@ const sendOtp = async (req, res) => {
       });
 
       console.log(`✅ OTP sent successfully to: ${user.email}`);
-      console.log(`📧 Mail server response: ${mailResult.response}`);
+      console.log(`📧 Resend response:`, result);
 
       res.json({ 
         message: "OTP sent successfully",
@@ -202,14 +199,11 @@ const sendOtp = async (req, res) => {
     } catch (emailError) {
       console.error(`❌ Failed to send OTP to ${user.email}:`, {
         error: emailError.message,
-        code: emailError.code,
-        command: emailError.command
       });
 
       return res.status(500).json({ 
         message: "Failed to send OTP email",
         error: emailError.message,
-        code: emailError.code
       });
     }
 
