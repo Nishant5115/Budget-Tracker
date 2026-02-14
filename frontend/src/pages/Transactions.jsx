@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import AddTransaction from "../components/AddTransaction";
+import EditTransactionForm from "../components/EditTransactionForm";
 import API from "../services/api";
 import ConfirmationDialog from "../components/ConfirmationDialog";
 import { useNotification } from "../contexts/NotificationContext";
@@ -11,8 +12,9 @@ function Transactions({ onTransactionAdded }) {
   const [error, setError] = useState("");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
@@ -21,14 +23,26 @@ function Transactions({ onTransactionAdded }) {
     try {
       setLoading(true);
 
-      const params = {};
-      if (filterType !== "all") params.type = filterType;
+      const params = { type: "expense" };
       if (filterCategory) params.category = filterCategory;
       if (filterFrom) params.from = filterFrom;
       if (filterTo) params.to = filterTo;
 
       const res = await API.get("/transactions", { params });
-      setTransactions(res.data);
+      let filtered = res.data;
+      
+      // Apply search query filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (t) =>
+            t.category?.toLowerCase().includes(query) ||
+            t.description?.toLowerCase().includes(query) ||
+            t.amount?.toString().includes(query)
+        );
+      }
+      
+      setTransactions(filtered);
       setError("");
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Failed to fetch transactions";
@@ -42,7 +56,7 @@ function Transactions({ onTransactionAdded }) {
   useEffect(() => {
     fetchTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchQuery]);
 
   const handleDeleteClick = (id) => {
     setTransactionToDelete(id);
@@ -72,6 +86,23 @@ function Transactions({ onTransactionAdded }) {
     setTransactionToDelete(null);
   };
 
+  const handleEdit = (transaction) => {
+    setEditingTransaction({ ...transaction });
+  };
+
+  const handleUpdateTransaction = async (updatedData) => {
+    try {
+      await API.put(`/transactions/${editingTransaction._id}`, updatedData);
+      showSuccess("Transaction updated successfully!");
+      setEditingTransaction(null);
+      fetchTransactions();
+      if (onTransactionAdded) onTransactionAdded();
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || "Failed to update transaction";
+      showError(errorMsg);
+    }
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -82,21 +113,14 @@ function Transactions({ onTransactionAdded }) {
   };
 
   const analytics = useMemo(() => {
-    let totalIncome = 0;
     let totalExpense = 0;
 
     transactions.forEach((t) => {
-      if (t.type === "income") {
-        totalIncome += t.amount;
-      } else if (t.type === "expense") {
-        totalExpense += t.amount;
-      }
+      totalExpense += t.amount;
     });
 
     return {
-      totalIncome,
       totalExpense,
-      balance: totalIncome - totalExpense,
     };
   }, [transactions]);
 
@@ -115,6 +139,24 @@ function Transactions({ onTransactionAdded }) {
         }}
       />
 
+      {/* Search Bar */}
+      <div style={{ marginTop: "20px", marginBottom: "16px" }}>
+        <input
+          type="text"
+          placeholder="🔍 Search transactions by category, description, or amount..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: "8px",
+            border: "1px solid #d1d5db",
+            fontSize: "14px",
+            boxSizing: "border-box",
+          }}
+        />
+      </div>
+
       {error && <p className="error" style={{ marginTop: "16px" }}>{error}</p>}
 
       <ConfirmationDialog
@@ -127,6 +169,42 @@ function Transactions({ onTransactionAdded }) {
         onCancel={handleDeleteCancel}
         type="danger"
       />
+
+      {/* Edit Transaction Modal */}
+      {editingTransaction && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: "white",
+            padding: "28px",
+            borderRadius: "12px",
+            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
+            maxWidth: "500px",
+            width: "90%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#111827", fontSize: "20px", fontWeight: 600 }}>
+              Edit Transaction
+            </h3>
+            <EditTransactionForm
+              transaction={editingTransaction}
+              onSave={handleUpdateTransaction}
+              onCancel={() => setEditingTransaction(null)}
+            />
+          </div>
+        </div>
+      )}
 
       <div style={{ marginTop: "32px" }}>
         <h3>Transaction History</h3>
@@ -143,34 +221,6 @@ function Transactions({ onTransactionAdded }) {
           gap: 10,
         }}
       >
-        <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 4,
-              fontSize: 12,
-              color: "#6b7280",
-            }}
-          >
-            Type
-          </label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "7px 8px",
-              borderRadius: 6,
-              border: "1px solid #d1d5db",
-              fontSize: 13,
-            }}
-          >
-            <option value="all">All</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
-          </select>
-        </div>
-
         <div>
           <label
             style={{
@@ -265,7 +315,6 @@ function Transactions({ onTransactionAdded }) {
           <button
             type="button"
             onClick={() => {
-              setFilterType("all");
               setFilterCategory("");
               setFilterFrom("");
               setFilterTo("");
@@ -294,7 +343,6 @@ function Transactions({ onTransactionAdded }) {
               <thead>
                 <tr style={{ borderBottom: "2px solid #ddd" }}>
                   <th style={{ padding: "12px", textAlign: "left" }}>Date</th>
-                  <th style={{ padding: "12px", textAlign: "left" }}>Type</th>
                   <th style={{ padding: "12px", textAlign: "left" }}>Category</th>
                   <th style={{ padding: "12px", textAlign: "left" }}>Description</th>
                   <th style={{ padding: "12px", textAlign: "right" }}>Amount</th>
@@ -305,18 +353,6 @@ function Transactions({ onTransactionAdded }) {
                 {transactions.map((transaction) => (
                   <tr key={transaction._id} style={{ borderBottom: "1px solid #eee" }}>
                     <td style={{ padding: "12px" }}>{formatDate(transaction.date)}</td>
-                    <td style={{ padding: "12px" }}>
-                      <span
-                        style={{
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          backgroundColor: transaction.type === "income" ? "#d4edda" : "#f8d7da",
-                          color: transaction.type === "income" ? "#155724" : "#721c24",
-                        }}
-                      >
-                        {transaction.type === "income" ? "Income" : "Expense"}
-                      </span>
-                    </td>
                     <td style={{ padding: "12px" }}>{transaction.category}</td>
                     <td style={{ padding: "12px" }}>{transaction.description || "-"}</td>
                     <td
@@ -324,25 +360,42 @@ function Transactions({ onTransactionAdded }) {
                         padding: "12px",
                         textAlign: "right",
                         fontWeight: "bold",
-                        color: transaction.type === "income" ? "green" : "red",
+                        color: "red",
                       }}
                     >
-                      {transaction.type === "income" ? "+" : "-"}₹{transaction.amount.toLocaleString()}
+                      -₹{transaction.amount.toLocaleString()}
                     </td>
                     <td style={{ padding: "12px", textAlign: "center" }}>
-                      <button
-                        onClick={() => handleDeleteClick(transaction._id)}
-                        style={{
-                          padding: "6px 12px",
-                          backgroundColor: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
+                      <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => handleEdit(transaction)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#3b82f6",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(transaction._id)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#dc3545",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

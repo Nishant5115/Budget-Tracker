@@ -10,19 +10,25 @@ import {
 import { getBudgetSummary } from "./services/budgetService";
 
 // Pages
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Budget from "./pages/Budget";
 import Profile from "./pages/Profile";
+import SavingsGoals from "./pages/SavingsGoals";
+import BillReminders from "./pages/BillReminders";
 
 // Components
 import ConfirmationDialog from "./components/ConfirmationDialog";
 import { useNotification } from "./contexts/NotificationContext";
+import { useTheme } from "./contexts/ThemeContext";
 
 function App() {
   const { showSuccess } = useNotification();
+  const { isDark, toggleTheme } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
@@ -103,11 +109,14 @@ function App() {
   };
 
   if (!isAuthenticated) {
-    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+    if (showLanding) {
+      return <Landing />;
+    }
+    return <Login onLoginSuccess={() => { setIsAuthenticated(true); setShowLanding(false); }} />;
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${isDark ? "dark-theme" : ""}`}>
       <aside className="sidebar">
         <div className="sidebar-logo">
           <div className="sidebar-logo-mark">💰</div>
@@ -147,6 +156,22 @@ function App() {
             <span className="icon">📝</span>
             <span className="label">Transactions</span>
           </button>
+          <button
+            className={currentPage === "savings-goals" ? "active" : ""}
+            onClick={() => setCurrentPage("savings-goals")}
+            title="Savings Goals"
+          >
+            <span className="icon">🎯</span>
+            <span className="label">Savings Goals</span>
+          </button>
+          <button
+            className={currentPage === "bill-reminders" ? "active" : ""}
+            onClick={() => setCurrentPage("bill-reminders")}
+            title="Bill Reminders"
+          >
+            <span className="icon">🔔</span>
+            <span className="label">Bill Reminders</span>
+          </button>
         </nav>
 
         <div className="sidebar-section-label">Account</div>
@@ -176,6 +201,22 @@ function App() {
           </div>
 
           <div className="header-right">
+            <button
+              onClick={toggleTheme}
+              style={{
+                padding: "8px 12px",
+                background: isDark ? "#fbbf24" : "#1e293b",
+                color: isDark ? "#1e293b" : "#fbbf24",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "18px",
+                marginRight: "12px",
+              }}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? "☀️" : "🌙"}
+            </button>
             <button className="logout-btn" onClick={handleLogoutClick}>
               Logout
             </button>
@@ -216,6 +257,8 @@ function App() {
             )}
 
             {currentPage === "profile" && <Profile />}
+            {currentPage === "savings-goals" && <SavingsGoals />}
+            {currentPage === "bill-reminders" && <BillReminders />}
           </div>
         </div>
       </div>

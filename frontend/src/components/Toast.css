@@ -48,6 +48,41 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .toast {
+    min-width: auto;
+    max-width: 90vw;
+    padding: 12px 14px;
+    font-size: 13px;
+    border-radius: 8px;
+    margin: 0 10px;
+  }
+
+  .toast-icon {
+    font-size: 16px;
+  }
+
+  .toast-message {
+    font-size: 13px;
+  }
+
+  .toast-close {
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast {
+    min-width: auto;
+    max-width: 85vw;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+
 .toast-success {
   background: #dcfce7;
   border: 1px solid #bbf7d0;
@@ -97,4 +132,5 @@
 .toast-exit {
   animation: slideOut 0.3s ease-out forwards;
 }
+
 

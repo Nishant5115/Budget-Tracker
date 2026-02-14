@@ -49,6 +49,37 @@
   transform: translateY(0);
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .add-transaction {
+    margin-bottom: 16px;
+  }
+
+  .add-transaction form {
+    gap: 12px;
+  }
+
+  .add-transaction input,
+  .add-transaction select {
+    padding: 12px;
+    font-size: 16px;
+    min-height: 44px;
+  }
+
+  .add-transaction button[type="submit"] {
+    padding: 12px 16px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-transaction input,
+  .add-transaction select {
+    width: 100% !important;
+  }
+}
+
 .error {
   color: #dc2626;
   background: #fee2e2;

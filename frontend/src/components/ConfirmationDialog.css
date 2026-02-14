@@ -128,3 +128,59 @@
   }
 }
 
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .confirmation-overlay {
+    padding: 16px;
+  }
+
+  .confirmation-dialog {
+    padding: 20px;
+    width: 90%;
+    max-width: none;
+  }
+
+  .confirmation-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .confirmation-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .confirmation-message {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .confirmation-actions {
+    gap: 8px;
+  }
+
+  .confirmation-button {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirmation-dialog {
+    padding: 16px;
+    width: 95%;
+  }
+
+  .confirmation-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .confirmation-button {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+

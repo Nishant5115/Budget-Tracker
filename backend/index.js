@@ -27,6 +27,12 @@ app.use("/api/users", userRoutes);
 const reportRoutes = require("./routes/reportRoutes");
 app.use("/api/reports", reportRoutes);
 
+const savingsGoalRoutes = require("./routes/savingsGoalRoutes");
+app.use("/api/savings-goals", savingsGoalRoutes);
+
+const billReminderRoutes = require("./routes/billReminderRoutes");
+app.use("/api/bill-reminders", billReminderRoutes);
+
 
 // test route
 app.get("/", (req, res) => {
