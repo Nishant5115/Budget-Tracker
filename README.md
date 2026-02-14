@@ -1,13 +1,13 @@
 # 💰 Budget Tracker – Full Stack MERN Application
 
-A production-ready Budget & Expense Management web application built using the MERN stack (MongoDB, Express, React, Node.js). Users can securely set monthly budgets, track expenses, receive alerts, view analytics, and download PDF reports.
+A production-ready Budget & Expense Management Web Application built using the MERN stack (MongoDB, Express, React, Node.js). Users can securely manage monthly budgets, track expenses, set savings goals, receive bill reminders, get email notifications, view analytics, and download professional PDF reports.
 
 ---
 
 ## 🚀 Live Demo
 
-Frontend: https://budget-tracker-93cz.onrender.com 
-Backend API: https://budget-tracker-backend-k2ur.onrender.com 
+Frontend: https://budget-tracker-93cz.onrender.com  
+Backend API: https://budget-tracker-backend-k2ur.onrender.com  
 
 ---
 
@@ -15,11 +15,10 @@ Backend API: https://budget-tracker-backend-k2ur.onrender.com
 
 ### Frontend
 - React (Vite)
-- Axios (Centralized API instance)
+- Axios (Centralized API Instance)
+- Responsive Mobile-First UI
 - Reusable Component Architecture
-- Responsive UI Design
-- Context-based Auth State
-- Environment-based API configuration
+- Environment-based API Configuration
 
 ### Backend
 - Node.js
@@ -27,13 +26,14 @@ Backend API: https://budget-tracker-backend-k2ur.onrender.com
 - MongoDB Atlas
 - Mongoose ODM
 - JWT Authentication
-- OTP Email Verification (Nodemailer)
+- OTP Email Verification (Resend API)
 - PDFKit (Monthly Report Generation)
 - Protected Routes via Middleware
 
 ### Deployment
 - Render (Frontend & Backend)
 - MongoDB Atlas (Cloud Database)
+- Resend (Email Service for OTP & Notifications)
 
 ---
 
@@ -41,77 +41,65 @@ Backend API: https://budget-tracker-backend-k2ur.onrender.com
 
 - User Registration
 - Login with Password
-- Email OTP-based Login
-- JWT-based session management
-- Protected API routes
-- Profile Management (Update name/email)
+- OTP-based Email Verification
+- JWT-based Secure Session Management
+- Protected API Routes
+- Profile Management
 
 ---
 
 ## 💳 Budget & Expense Management
 
 - Set Monthly Budget
-- Prevent duplicate budget for same month
-- Update budget with confirmation
-- Add Expense (Expense-only system)
+- Prevent Duplicate Budget for Same Month
+- Update Budget with Confirmation
+- Add & Delete Expenses
 - View Expense History
-- Delete Expense
 - Filter by Month & Year
 - Budget vs Expense Comparison
-- Budget Alert when near limit
+- Real-time Budget Alerts
+
+---
+
+## 🎯 Savings & Reminders
+
+- Create Savings Goals
+- Track Savings Progress
+- Add Bill Reminders
+- Email Notifications for Important Actions
 
 ---
 
 ## 📊 Dashboard Features
 
 - Monthly Budget Overview
-- Total Expenses
-- Remaining Budget
-- Category-wise Pie Chart
-- Monthly Trend Line Chart
-- Dynamic Month Filter
-- Smooth Dashboard Refresh after actions
+- Total Expenses & Remaining Budget
+- Category-wise Expense Pie Chart
+- Monthly Expense Trend Line Chart
+- Dynamic Month Filtering
+- Fully Mobile Responsive Layout
 
 ---
 
 ## 📄 Advanced Features
 
-- Generate & Download Monthly PDF Report
-- Professional Profile Page
+- Download Monthly PDF Financial Report
+- Professional Profile Page with Financial Summary
 - Secure Backend Architecture
-- Environment Variable Configuration
-- Production Deployment Ready
+- Environment-Based Production Configuration
 
 ---
 
+## 🏗 Architecture Highlights
 
-## 🎯 Key Highlights
-
-- Full-stack production-level architecture
-- JWT + OTP secure authentication
-- Cloud database integration
-- PDF generation system
-- Clean modular folder structure
-- Environment-based API management
-- Deployed on Render
-
----
-
-## 📌 Future Enhancements
-
-- Budget auto-alert email system
-- Category-level budget limits
-- Recurring expense tracking
-- CSV export support
-- Advanced analytics dashboard
-- Admin dashboard
-- Dark/Light theme toggle
+- Clean Modular Folder Structure
+- Separation of Concerns (Routes → Controllers → Models)
+- Centralized API Handling
+- Secure Middleware-Based Authorization
+- Production-Ready Deployment Setup
 
 ---
 
 ## 👨‍💻 Author
 
 Nishant Verma  
-MERN Stack Enthusiast  
-
----
