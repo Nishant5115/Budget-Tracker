@@ -7,6 +7,11 @@ const {
 
 const createSavingsGoal = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { title, targetAmount, targetDate, description, category } = req.body;
 
     if (!title || !targetAmount || !targetDate) {
@@ -40,7 +45,7 @@ const createSavingsGoal = async (req, res) => {
     // Send email notification
     const user = await User.findById(req.user._id);
     if (user && user.email) {
-      sendSavingsGoalCreatedEmail(user.email, user.name, {
+      await sendSavingsGoalCreatedEmail(user.email, user.name, {
         title: goal.title,
         targetAmount: goal.targetAmount,
         targetDate: goal.targetDate,
@@ -159,7 +164,7 @@ const addToSavingsGoal = async (req, res) => {
     if (goal.isCompleted && goal.currentAmount - amount < goal.targetAmount) {
       const user = await User.findById(req.user._id);
       if (user && user.email) {
-        sendSavingsGoalCompletedEmail(user.email, user.name, {
+        await sendSavingsGoalCompletedEmail(user.email, user.name, {
           title: goal.title,
           targetAmount: goal.targetAmount,
           currentAmount: goal.currentAmount,

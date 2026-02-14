@@ -1,9 +1,14 @@
 const BillReminder = require("../models/BillReminder");
 const User = require("../models/User");
-const { sendBillReminderEmail } = require("../utils/emailService");
+const { sendBillReminderEmail, sendBillPaymentConfirmationEmail } = require("../utils/emailService");
 
 const createBillReminder = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const {
       title,
       amount,
@@ -49,7 +54,7 @@ const createBillReminder = async (req, res) => {
     // Send email notification
     const user = await User.findById(req.user._id);
     if (user && user.email) {
-      sendBillReminderEmail(user.email, user.name, {
+      await sendBillReminderEmail(user.email, user.name, {
         title: reminder.title,
         amount: reminder.amount,
         dueDate: reminder.dueDate,
@@ -154,10 +159,9 @@ const markBillAsPaid = async (req, res) => {
     await reminder.save();
 
     // Send email confirmation
-    const { sendBillPaymentConfirmationEmail } = require("../utils/emailService");
     const user = await User.findById(req.user._id);
     if (user && user.email) {
-      sendBillPaymentConfirmationEmail(user.email, user.name, {
+      await sendBillPaymentConfirmationEmail(user.email, user.name, {
         title: reminder.title,
         amount: reminder.amount,
         category: reminder.category,

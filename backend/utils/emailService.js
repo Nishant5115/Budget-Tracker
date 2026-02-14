@@ -289,6 +289,47 @@ const sendTransactionNotificationEmail = async (userEmail, userName, transaction
   }
 };
 
+// Send budget confirmation email
+const sendBudgetConfirmationEmail = async (userEmail, userName, budgetData) => {
+  try {
+    const monthYear = new Date(budgetData.year, budgetData.month - 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: userEmail,
+      subject: `💰 Budget Set for ${monthYear}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 20px; border-radius: 10px 10px 0 0; color: white;">
+            <h2 style="margin: 0;">Budget Confirmation</h2>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+            <p>Hey ${userName},</p>
+            
+            <p>Your monthly budget has been set:</p>
+            
+            <div style="background: white; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+              <p style="margin: 5px 0;"><strong>Month:</strong> ${monthYear}</p>
+              <p style="margin: 5px 0;"><strong>Budget Amount:</strong> ₹${budgetData.amount.toFixed(2)}</p>
+            </div>
+            
+            <p>Monitor your spending throughout the month to stay within your budget!</p>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <p style="color: #64748b; font-size: 12px;">This is an automated notification from BudgetTracker. Please do not reply to this email.</p>
+            </div>
+          </div>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Budget confirmation email sent to ${userEmail}`);
+  } catch (error) {
+    console.error("Error sending budget confirmation email:", error);
+  }
+};
+
 module.exports = {
   sendBillReminderEmail,
   sendBillPaymentConfirmationEmail,
@@ -296,4 +337,5 @@ module.exports = {
   sendSavingsGoalCompletedEmail,
   sendBudgetAlertEmail,
   sendTransactionNotificationEmail,
+  sendBudgetConfirmationEmail,
 };

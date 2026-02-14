@@ -1,10 +1,15 @@
 const Budget = require("../models/Budget");
 const Transaction = require("../models/Transaction");
 const User = require("../models/User");
-const { sendBudgetAlertEmail } = require("../utils/emailService");
+const { sendBudgetAlertEmail, sendBudgetConfirmationEmail } = require("../utils/emailService");
 
 const setBudget = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { amount, month, year } = req.body;
 
     if (!amount || !month || !year) {
@@ -53,46 +58,10 @@ const setBudget = async (req, res) => {
     // Send budget confirmation email
     const user = await User.findById(req.user._id);
     if (user && user.email) {
-      const mailOptions = {
-        to: user.email,
-        subject: `💰 Budget Set for ${new Date(Number(year), Number(month) - 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 20px; border-radius: 10px 10px 0 0; color: white;">
-              <h2 style="margin: 0;">Budget Confirmation</h2>
-            </div>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
-              <p>Hey ${user.name},</p>
-              
-              <p>Your monthly budget has been set:</p>
-              
-              <div style="background: white; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0;">
-                <p style="margin: 5px 0;"><strong>Month:</strong> ${new Date(Number(year), Number(month) - 1).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</p>
-                <p style="margin: 5px 0;"><strong>Budget Amount:</strong> ₹${Number(amount).toFixed(2)}</p>
-              </div>
-              
-              <p>Monitor your spending throughout the month to stay within your budget!</p>
-              
-              <div style="text-align: center; margin-top: 20px;">
-                <p style="color: #64748b; font-size: 12px;">This is an automated notification from BudgetTracker. Please do not reply to this email.</p>
-              </div>
-            </div>
-          </div>
-        `,
-      };
-
-      const nodemailer = require("nodemailer");
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
-
-      transporter.sendMail(mailOptions).catch((error) => {
-        console.error("Error sending budget confirmation email:", error);
+      sendBudgetConfirmationEmail(user.email, user.name, {
+        amount: Number(amount),
+        month: Number(month),
+        year: Number(year),
       });
     }
 

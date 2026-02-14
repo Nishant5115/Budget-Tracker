@@ -5,6 +5,11 @@ const { sendTransactionNotificationEmail, sendBudgetAlertEmail } = require("../u
 
 const addTransaction = async (req, res) => {
   try {
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { amount, category, date, type, description } = req.body;
 
     if (!amount || amount <= 0) {
@@ -27,7 +32,7 @@ const addTransaction = async (req, res) => {
     // Send email notification
     const user = await User.findById(req.user._id);
     if (user && user.email) {
-      sendTransactionNotificationEmail(user.email, user.name, {
+      await sendTransactionNotificationEmail(user.email, user.name, {
         type: transaction.type,
         amount: transaction.amount,
         category: transaction.category,
@@ -66,7 +71,7 @@ const addTransaction = async (req, res) => {
 
           // Send alert if budget is 80% or more utilized
           if (percentageUsed >= 80) {
-            sendBudgetAlertEmail(user.email, user.name, {
+            await sendBudgetAlertEmail(user.email, user.name, {
               category: "Overall Budget",
               limit: budget.amount,
               spent: totalExpense,

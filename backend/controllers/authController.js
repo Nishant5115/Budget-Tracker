@@ -3,14 +3,26 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
+// Initialize transporter with validation
+let transporter;
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const initializeTransporter = () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.warn("⚠️ WARNING: EMAIL_USER or EMAIL_PASS not configured in environment variables");
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+};
+
+// Initialize on app start
+transporter = initializeTransporter();
 
 const registerUser = async (req, res) => {
   try {
@@ -108,10 +120,24 @@ const loginUser = async (req, res) => {
 
 const sendOtp = async (req, res) => {
   try {
+    // Validate email configuration
+    if (!transporter) {
+      console.error("❌ Email transporter not configured. Check EMAIL_USER and EMAIL_PASS environment variables.");
+      return res.status(500).json({ 
+        message: "Email service is not configured. Please contact administrator.",
+        details: "EMAIL_USER or EMAIL_PASS not set"
+      });
+    }
+
     const { email } = req.body;
 
+    // Validate input
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     const user = await User.findOne({
@@ -119,6 +145,7 @@ const sendOtp = async (req, res) => {
     });
 
     if (!user) {
+      console.warn(`⚠️ User not found for email: ${email}`);
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -131,23 +158,67 @@ const sendOtp = async (req, res) => {
 
     await user.save();
 
-  
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: "Your Budget Tracker OTP",
-      html: `
-        <h2>Budget Tracker Login OTP</h2>
-        <p>Your OTP is:</p>
-        <h1>${generatedOtp}</h1>
-        <p>This OTP will expire in 10 minutes.</p>
-      `,
-    });
+    // Send OTP to user's registered email with error handling
+    try {
+      const mailResult = await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Your Budget Tracker OTP",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 20px; border-radius: 10px 10px 0 0; color: white;">
+              <h2 style="margin: 0;">Budget Tracker Login</h2>
+            </div>
+            
+            <div style="background: #f9fafb; padding: 20px; border-radius: 0 0 10px 10px;">
+              <p>Hi ${user.name},</p>
+              
+              <p>Your OTP for login is:</p>
+              
+              <div style="background: white; padding: 20px; border: 2px solid #3b82f6; border-radius: 10px; text-align: center; margin: 20px 0;">
+                <h1 style="color: #3b82f6; letter-spacing: 5px; margin: 0;">${generatedOtp}</h1>
+              </div>
+              
+              <p><strong>Important:</strong> This OTP will expire in <strong>10 minutes</strong>.</p>
+              <p>Do not share this OTP with anyone.</p>
+              
+              <div style="text-align: center; margin-top: 20px;">
+                <p style="color: #64748b; font-size: 12px;">This is an automated notification from BudgetTracker. Please do not reply to this email.</p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
 
-    res.json({ message: "OTP sent successfully" });
+      console.log(`✅ OTP sent successfully to: ${user.email}`);
+      console.log(`📧 Mail server response: ${mailResult.response}`);
+
+      res.json({ 
+        message: "OTP sent successfully",
+        email: user.email,
+        expiresIn: "10 minutes"
+      });
+
+    } catch (emailError) {
+      console.error(`❌ Failed to send OTP to ${user.email}:`, {
+        error: emailError.message,
+        code: emailError.code,
+        command: emailError.command
+      });
+
+      return res.status(500).json({ 
+        message: "Failed to send OTP email",
+        error: emailError.message,
+        code: emailError.code
+      });
+    }
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in sendOtp:", error);
+    res.status(500).json({ 
+      message: "Internal server error",
+      error: error.message 
+    });
   }
 };
 
