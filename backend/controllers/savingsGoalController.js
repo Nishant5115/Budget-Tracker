@@ -1,4 +1,9 @@
 const SavingsGoal = require("../models/SavingsGoal");
+const User = require("../models/User");
+const {
+  sendSavingsGoalCreatedEmail,
+  sendSavingsGoalCompletedEmail,
+} = require("../utils/emailService");
 
 const createSavingsGoal = async (req, res) => {
   try {
@@ -31,6 +36,18 @@ const createSavingsGoal = async (req, res) => {
       category: category || "General",
       user: req.user._id,
     });
+
+    // Send email notification
+    const user = await User.findById(req.user._id);
+    if (user && user.email) {
+      sendSavingsGoalCreatedEmail(user.email, user.name, {
+        title: goal.title,
+        targetAmount: goal.targetAmount,
+        targetDate: goal.targetDate,
+        category: goal.category,
+        description: goal.description,
+      });
+    }
 
     res.status(201).json(goal);
   } catch (error) {
@@ -137,6 +154,18 @@ const addToSavingsGoal = async (req, res) => {
     }
 
     await goal.save();
+
+    // Send completion email if goal just reached target
+    if (goal.isCompleted && goal.currentAmount - amount < goal.targetAmount) {
+      const user = await User.findById(req.user._id);
+      if (user && user.email) {
+        sendSavingsGoalCompletedEmail(user.email, user.name, {
+          title: goal.title,
+          targetAmount: goal.targetAmount,
+          currentAmount: goal.currentAmount,
+        });
+      }
+    }
 
     res.status(200).json(goal);
   } catch (error) {

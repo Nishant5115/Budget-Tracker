@@ -1,4 +1,6 @@
 const BillReminder = require("../models/BillReminder");
+const User = require("../models/User");
+const { sendBillReminderEmail } = require("../utils/emailService");
 
 const createBillReminder = async (req, res) => {
   try {
@@ -43,6 +45,18 @@ const createBillReminder = async (req, res) => {
       reminderDaysBefore: reminderDaysBefore || 3,
       user: req.user._id,
     });
+
+    // Send email notification
+    const user = await User.findById(req.user._id);
+    if (user && user.email) {
+      sendBillReminderEmail(user.email, user.name, {
+        title: reminder.title,
+        amount: reminder.amount,
+        dueDate: reminder.dueDate,
+        category: reminder.category,
+        description: reminder.description,
+      });
+    }
 
     res.status(201).json(reminder);
   } catch (error) {
@@ -138,6 +152,17 @@ const markBillAsPaid = async (req, res) => {
 
     reminder.isPaid = true;
     await reminder.save();
+
+    // Send email confirmation
+    const { sendBillPaymentConfirmationEmail } = require("../utils/emailService");
+    const user = await User.findById(req.user._id);
+    if (user && user.email) {
+      sendBillPaymentConfirmationEmail(user.email, user.name, {
+        title: reminder.title,
+        amount: reminder.amount,
+        category: reminder.category,
+      });
+    }
 
     res.status(200).json(reminder);
   } catch (error) {

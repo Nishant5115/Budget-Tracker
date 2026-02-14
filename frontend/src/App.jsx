@@ -32,6 +32,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [currentUser, setCurrentUser] = useState(null);
   const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [categoryData, setCategoryData] = useState({});
   const [monthlyData, setMonthlyData] = useState({});
@@ -56,6 +57,19 @@ function App() {
 
   const handleLogoutCancel = () => {
     setShowLogoutConfirmation(false);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    closeSidebar();
   };
 
   useEffect(() => {
@@ -117,7 +131,19 @@ function App() {
 
   return (
     <div className={`app-shell ${isDark ? "dark-theme" : ""}`}>
-      <aside className="sidebar">
+      {isSidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={closeSidebar}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 998,
+          }}
+        />
+      )}
+      <aside className={`sidebar ${isSidebarOpen ? "open" : ""}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-mark">💰</div>
           <div className="sidebar-logo-text">BudgetTracker</div>
@@ -134,7 +160,7 @@ function App() {
         <nav className="sidebar-nav">
           <button
             className={currentPage === "dashboard" ? "active" : ""}
-            onClick={() => setCurrentPage("dashboard")}
+            onClick={() => handlePageChange("dashboard")}
             title="Dashboard"
           >
             <span className="icon">📊</span>
@@ -142,7 +168,7 @@ function App() {
           </button>
           <button
             className={currentPage === "budget" ? "active" : ""}
-            onClick={() => setCurrentPage("budget")}
+            onClick={() => handlePageChange("budget")}
             title="Budget"
           >
             <span className="icon">💰</span>
@@ -150,7 +176,7 @@ function App() {
           </button>
           <button
             className={currentPage === "transactions" ? "active" : ""}
-            onClick={() => setCurrentPage("transactions")}
+            onClick={() => handlePageChange("transactions")}
             title="Transactions"
           >
             <span className="icon">📝</span>
@@ -158,7 +184,7 @@ function App() {
           </button>
           <button
             className={currentPage === "savings-goals" ? "active" : ""}
-            onClick={() => setCurrentPage("savings-goals")}
+            onClick={() => handlePageChange("savings-goals")}
             title="Savings Goals"
           >
             <span className="icon">🎯</span>
@@ -166,7 +192,7 @@ function App() {
           </button>
           <button
             className={currentPage === "bill-reminders" ? "active" : ""}
-            onClick={() => setCurrentPage("bill-reminders")}
+            onClick={() => handlePageChange("bill-reminders")}
             title="Bill Reminders"
           >
             <span className="icon">🔔</span>
@@ -178,7 +204,7 @@ function App() {
         <nav className="sidebar-nav">
           <button
             className={currentPage === "profile" ? "active" : ""}
-            onClick={() => setCurrentPage("profile")}
+            onClick={() => handlePageChange("profile")}
             title="Profile"
           >
             <span className="icon">👤</span>
@@ -193,6 +219,21 @@ function App() {
 
       <div className="app-main">
         <header className="topbar">
+          <button
+            className="mobile-menu-btn"
+            onClick={toggleSidebar}
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              fontSize: "24px",
+              cursor: "pointer",
+              padding: "8px",
+              marginRight: "12px",
+            }}
+          >
+            ☰
+          </button>
           <div className="topbar-left">
             <h1 className="title">Financial Dashboard</h1>
             <p className="subtitle">

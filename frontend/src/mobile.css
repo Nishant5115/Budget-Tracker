@@ -1,5 +1,12 @@
 /* Mobile-Friendly Utilities */
 
+/* Show hamburger menu on mobile */
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: block !important;
+  }
+}
+
 /* Flex containers that stack on mobile */
 @media (max-width: 768px) {
   [style*="display: flex"] {
