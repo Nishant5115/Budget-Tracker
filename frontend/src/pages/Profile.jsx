@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { getCurrentUserProfile, updateCurrentUserProfile, changePassword } from "../services/userService";
+import { useNotification } from "../contexts/NotificationContext";
 
 function Profile() {
+  const { showSuccess, showError } = useNotification();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
   const [name, setName] = useState("");
@@ -16,7 +17,6 @@ function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const fetchProfile = async () => {
@@ -41,7 +41,6 @@ function Profile() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     try {
       const updated = await updateCurrentUserProfile({ name, email });
@@ -50,18 +49,17 @@ function Profile() {
         name: updated.name,
         email: updated.email,
       }));
-      setSuccess("Profile updated successfully!");
+      showSuccess("Profile updated successfully!");
       setIsEditing(false);
-      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      const errorMsg = err.response?.data?.message || "Failed to update profile";
+      showError(errorMsg);
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPasswordError("");
-    setPasswordSuccess("");
 
     try {
       setPasswordLoading(true);
@@ -70,14 +68,15 @@ function Profile() {
         newPassword,
         confirmPassword,
       });
-      setPasswordSuccess("Password changed successfully!");
+      showSuccess("Password changed successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setShowPasswordModal(false);
-      setTimeout(() => setPasswordSuccess(""), 3000);
     } catch (err) {
-      setPasswordError(err.response?.data?.message || "Failed to change password");
+      const errorMsg = err.response?.data?.message || "Failed to change password";
+      setPasswordError(errorMsg);
+      showError(errorMsg);
     } finally {
       setPasswordLoading(false);
     }
@@ -156,7 +155,7 @@ function Profile() {
         }}></div>
       </div>
 
-      {/* Messages */}
+      {/* Error messages for form validation */}
       {error && (
         <div style={{
           background: "#fee2e2",
@@ -168,36 +167,6 @@ function Profile() {
           fontSize: "13px",
         }}>
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div style={{
-          background: "#dcfce7",
-          border: "1px solid #bbf7d0",
-          color: "#166534",
-          padding: "12px 16px",
-          borderRadius: "8px",
-          marginBottom: "16px",
-          fontSize: "13px",
-          animation: "fadeOut 3s ease-in-out forwards",
-        }}>
-          ✓ {success}
-        </div>
-      )}
-
-      {passwordSuccess && (
-        <div style={{
-          background: "#dcfce7",
-          border: "1px solid #bbf7d0",
-          color: "#166534",
-          padding: "12px 16px",
-          borderRadius: "8px",
-          marginBottom: "16px",
-          fontSize: "13px",
-          animation: "fadeOut 3s ease-in-out forwards",
-        }}>
-          ✓ {passwordSuccess}
         </div>
       )}
 
@@ -599,13 +568,6 @@ function Profile() {
         </div>
       )}
 
-      <style>{`
-        @keyframes fadeOut {
-          0% { opacity: 1; }
-          85% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-      `}</style>
     </div>
   );
 }

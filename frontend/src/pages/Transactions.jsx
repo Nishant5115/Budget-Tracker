@@ -1,11 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import AddTransaction from "../components/AddTransaction";
 import API from "../services/api";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+import { useNotification } from "../contexts/NotificationContext";
 
 function Transactions({ onTransactionAdded }) {
+  const { showSuccess, showError } = useNotification();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
 
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("");
@@ -26,7 +31,9 @@ function Transactions({ onTransactionAdded }) {
       setTransactions(res.data);
       setError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch transactions");
+      const errorMsg = err.response?.data?.message || "Failed to fetch transactions";
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -37,18 +44,32 @@ function Transactions({ onTransactionAdded }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this transaction?")) {
-      return;
-    }
+  const handleDeleteClick = (id) => {
+    setTransactionToDelete(id);
+    setShowDeleteConfirmation(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!transactionToDelete) return;
 
     try {
-      await API.delete(`/transactions/${id}`);
+      await API.delete(`/transactions/${transactionToDelete}`);
+      showSuccess("Transaction deleted successfully!");
+      setShowDeleteConfirmation(false);
+      setTransactionToDelete(null);
       fetchTransactions();
       if (onTransactionAdded) onTransactionAdded();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete transaction");
+      const errorMsg = err.response?.data?.message || "Failed to delete transaction";
+      showError(errorMsg);
+      setShowDeleteConfirmation(false);
+      setTransactionToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirmation(false);
+    setTransactionToDelete(null);
   };
 
   const formatDate = (dateString) => {
@@ -95,6 +116,17 @@ function Transactions({ onTransactionAdded }) {
       />
 
       {error && <p className="error" style={{ marginTop: "16px" }}>{error}</p>}
+
+      <ConfirmationDialog
+        isOpen={showDeleteConfirmation}
+        title="Delete Transaction?"
+        message="Are you sure you want to delete this transaction? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+        type="danger"
+      />
 
       <div style={{ marginTop: "32px" }}>
         <h3>Transaction History</h3>
@@ -299,7 +331,7 @@ function Transactions({ onTransactionAdded }) {
                     </td>
                     <td style={{ padding: "12px", textAlign: "center" }}>
                       <button
-                        onClick={() => handleDelete(transaction._id)}
+                        onClick={() => handleDeleteClick(transaction._id)}
                         style={{
                           padding: "6px 12px",
                           backgroundColor: "#dc3545",

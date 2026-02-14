@@ -16,10 +16,16 @@ import Transactions from "./pages/Transactions";
 import Budget from "./pages/Budget";
 import Profile from "./pages/Profile";
 
+// Components
+import ConfirmationDialog from "./components/ConfirmationDialog";
+import { useNotification } from "./contexts/NotificationContext";
+
 function App() {
+  const { showSuccess } = useNotification();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [currentUser, setCurrentUser] = useState(null);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
   const [categoryData, setCategoryData] = useState({});
   const [monthlyData, setMonthlyData] = useState({});
@@ -29,11 +35,21 @@ function App() {
   const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
   const [filterYear, setFilterYear] = useState(now.getFullYear());
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const handleLogoutConfirm = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setIsAuthenticated(false);
     setCurrentUser(null);
+    showSuccess("Logged out successfully!");
+    setShowLogoutConfirmation(false);
+  };
+
+  const handleLogoutCancel = () => {
+    setShowLogoutConfirmation(false);
   };
 
   useEffect(() => {
@@ -160,11 +176,22 @@ function App() {
           </div>
 
           <div className="header-right">
-            <button className="logout-btn" onClick={handleLogout}>
+            <button className="logout-btn" onClick={handleLogoutClick}>
               Logout
             </button>
           </div>
         </header>
+
+        <ConfirmationDialog
+          isOpen={showLogoutConfirmation}
+          title="Logout?"
+          message="Are you sure you want to logout? You'll need to sign in again to access your account."
+          confirmText="Logout"
+          cancelText="Cancel"
+          onConfirm={handleLogoutConfirm}
+          onCancel={handleLogoutCancel}
+          type="warning"
+        />
 
         <div className="main-surface">
           <div className="main-content">

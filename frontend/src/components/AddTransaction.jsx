@@ -1,8 +1,10 @@
 import { useState } from "react";
 import API from "../services/api";
+import { useNotification } from "../contexts/NotificationContext";
 import "./AddTransaction.css";
 
 function AddTransaction({ onSuccess }) {
+  const { showSuccess, showError } = useNotification();
   const [showForm, setShowForm] = useState(false);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -25,7 +27,9 @@ function AddTransaction({ onSuccess }) {
     today.setHours(0, 0, 0, 0);
 
     if (selectedDate < today) {
-      setError("Cannot add transactions for past dates. Please select today or a future date.");
+      const errorMsg = "Cannot add transactions for past dates. Please select today or a future date.";
+      setError(errorMsg);
+      showError(errorMsg);
       return;
     }
 
@@ -46,9 +50,12 @@ function AddTransaction({ onSuccess }) {
       setDescription("");
       setShowForm(false);
 
+      showSuccess(`${type === "expense" ? "Expense" : "Income"} added successfully!`);
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add transaction");
+      const errorMsg = err.response?.data?.message || "Failed to add transaction";
+      setError(errorMsg);
+      showError(errorMsg);
     }
   };
 

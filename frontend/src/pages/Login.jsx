@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { loginUser, registerUser, sendOtp, verifyOtp } from "../services/authService";
+import { useNotification } from "../contexts/NotificationContext";
 import "./Login.css";
 
 function Login({ onLoginSuccess }) {
+  const { showSuccess, showError } = useNotification();
   const [isRegister, setIsRegister] = useState(false);
   const [useOtp, setUseOtp] = useState(false);
   const [name, setName] = useState("");
@@ -12,34 +14,32 @@ function Login({ onLoginSuccess }) {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     try {
       if (isRegister) {
         if (password !== confirmPassword) {
-          setError("Passwords do not match");
+          showError("Passwords do not match");
           return;
         }
 
         if (password.length < 8) {
-          setError("Password must be at least 8 characters long");
+          showError("Password must be at least 8 characters long");
           return;
         }
 
         if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-          setError(
+          showError(
             "Password must contain at least one uppercase letter and one number"
           );
           return;
         }
 
         await registerUser({ name, email, password });
-        setSuccess("Registration successful. Please sign in.");
+        showSuccess("Registration successful! Please sign in.");
         setIsRegister(false);
         setName("");
         setEmail("");
@@ -51,20 +51,35 @@ function Login({ onLoginSuccess }) {
             try {
               await sendOtp(email);
               setOtpSent(true);
-              setSuccess("OTP sent to your email.");
+              showSuccess("OTP sent to your email successfully!");
             } catch (err) {
-              setError(err.message || "Failed to send OTP");
+              const errorMsg = err.response?.data?.message || err.message || "Failed to send OTP";
+              if (errorMsg.toLowerCase().includes("expired") || errorMsg.toLowerCase().includes("invalid")) {
+                showError(errorMsg);
+              } else {
+                showError("Failed to send OTP. Please try again.");
+              }
             }
           } else {
             try {
               const data = await verifyOtp({ email, otp });
-      localStorage.setItem("token", data.token);
+              localStorage.setItem("token", data.token);
               if (data.user) {
                 localStorage.setItem("user", JSON.stringify(data.user));
               }
-      onLoginSuccess();
-    } catch (err) {
-              setError(err.message || "OTP verification failed");
+              showSuccess("OTP verified successfully! Logging in...");
+              setTimeout(() => {
+                onLoginSuccess();
+              }, 500);
+            } catch (err) {
+              const errorMsg = err.response?.data?.message || err.message || "OTP verification failed";
+              if (errorMsg.toLowerCase().includes("expired")) {
+                showError("OTP has expired. Please request a new one.");
+              } else if (errorMsg.toLowerCase().includes("incorrect") || errorMsg.toLowerCase().includes("invalid")) {
+                showError("Invalid OTP. Please check and try again.");
+              } else {
+                showError(errorMsg);
+              }
             }
           }
         } else {
@@ -73,11 +88,21 @@ function Login({ onLoginSuccess }) {
           if (data.user) {
             localStorage.setItem("user", JSON.stringify(data.user));
           }
-          onLoginSuccess();
+          showSuccess("Login successful! Welcome back.");
+          setTimeout(() => {
+            onLoginSuccess();
+          }, 500);
         }
       }
     } catch (err) {
-      setError(err.message || (isRegister ? "Registration failed" : "Login failed"));
+      const errorMsg = err.response?.data?.message || err.message || (isRegister ? "Registration failed" : "Login failed");
+      if (errorMsg.toLowerCase().includes("invalid credentials")) {
+        showError("Invalid email or password. Please try again.");
+      } else if (errorMsg.toLowerCase().includes("unauthorized")) {
+        showError("Unauthorized access. Please check your credentials.");
+      } else {
+        showError(errorMsg);
+      }
     }
   };
 
@@ -99,9 +124,6 @@ function Login({ onLoginSuccess }) {
       </p>
 
       {error && <p className="login-error">{error}</p>}
-      {success && (
-        <p style={{ color: "#16a34a", textAlign: "center", marginBottom: "10px" }}>{success}</p>
-      )}
 
       <form onSubmit={handleSubmit}>
         {isRegister && (
@@ -175,7 +197,6 @@ function Login({ onLoginSuccess }) {
               setOtp("");
               setOtpSent(false);
               setError("");
-              setSuccess("");
             }}
             style={{
               background: "none",
@@ -201,7 +222,6 @@ function Login({ onLoginSuccess }) {
             setOtp("");
             setOtpSent(false);
             setError("");
-            setSuccess("");
           }}
           style={{
             background: "none",
